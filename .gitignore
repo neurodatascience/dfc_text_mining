@@ -2,6 +2,8 @@ PMC-ids.csv.gz
 PMC-ids.csv
 pmcids.sqlite3
 pmcids.sqlite3.journal
+dfc_citing_pmcids.txt
+opencitations_data.json
 
 flycheck__*
 
