@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 import pathlib
 import sqlite3
+import sys
 import zlib
 
 import pandas as pd
@@ -12,13 +13,16 @@ def _get_pmcids_archive() -> pathlib.Path:
     if archive_path.is_file():
         return archive_path
     try:
-        resp = requests.get("https://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz")
+        resp = requests.get(
+            "https://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz"
+        )
         resp.raise_for_status()
         archive_path.write_bytes(resp.content)
         return archive_path
     except Exception:
         if archive_path.is_file():
             archive_path.unlink()
+
 
 def _get_pmcids_csv() -> pathlib.Path:
     pmcids_csv = pathlib.Path("PMC-ids.csv")
@@ -42,15 +46,23 @@ def _get_pmcids_db() -> pathlib.Path:
     return database
 
 
-def doi_to_pmcid(dois: Sequence[str]) -> pd.DataFrame:
+def doi_to_pmcid(doi: str) -> dict | None:
     db = _get_pmcids_db()
-    results = []
     with sqlite3.connect(db) as connection:
         connection.row_factory = sqlite3.Row
-        for doi in dois:
-            res = connection.execute(
-                "SELECT * from pmcids WHERE DOI = ?", (doi,)
-            )
-            results.append(dict(res.fetchone()))
-    pmcids = pd.DataFrame(results)
-    return pmcids
+        res = connection.execute(
+            "SELECT * from pmcids WHERE DOI = ?", (doi,)
+        ).fetchone()
+    if res is None:
+        return None
+    return dict(res)
+
+
+def multi_doi_to_pmcid(all_dois: Sequence[str]) -> pd.DataFrame:
+    db = _get_pmcids_db()
+    with sqlite3.connect(db) as connection:
+        df = pd.read_sql("select * from pmcids", connection)
+    df.dropna(subset=("DOI", "PMCID"), inplace=True)
+    df.set_index("DOI", inplace=True)
+    intersection = df.index.intersection(all_dois)
+    return df.loc[intersection].reset_index()

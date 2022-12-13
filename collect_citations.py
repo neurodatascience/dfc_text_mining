@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 
@@ -12,5 +13,13 @@ if "OPENCITATIONS_ACCESS_TOKEN" in os.environ:
 
 
 all_dois = pathlib.Path("dfc_dois.txt").read_text("UTF-8").strip().split("\n")
-citations = requests.get(f"{OPENCITATIONS_URL}{all_dois[0]}", headers=HEADERS)
-print(citations.json())
+all_citation_info = []
+for doi in all_dois:
+    print(f"fetching citation data for {doi}")
+    citations = requests.get(f"{OPENCITATIONS_URL}{doi}", headers=HEADERS)
+    citations.raise_for_status()
+    all_citation_info.append(citations.json())
+
+pathlib.Path("opencitations_data.json").write_text(
+    json.dumps(all_citation_info), "UTF-8"
+)
