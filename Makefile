@@ -1,4 +1,4 @@
-.PHONY: all download
+.PHONY: all download clean
 
 all: dfc_citing_pmcids.txt
 
@@ -18,3 +18,6 @@ dfc_citing_pmcids.txt: opencitations_data.json pmcids.sqlite3
 download: dfc_citing_pmcids.txt
 	export PUBGET_DATA_DIR="$${PUBGET_DATA_DIR:-$$(pwd)}"
 	pubget run --pmcids_file $< --labelbuddy
+
+clean:
+	rm -f PMC-ids.csv.gz PMC-ids.csv pmcids.sqlite3 opencitations_data.json dfc_citing_pmcids.txt
