@@ -1,3 +1,5 @@
+.PHONY: all download
+
 all: dfc_citing_pmcids.txt
 
 PMC-ids.csv:
