@@ -4,6 +4,9 @@ pmcids.sqlite3
 pmcids.sqlite3.journal
 dfc_citing_pmcids.txt
 opencitations_data.json
+opencitations_rest_data.json
+opencitations_sparql_data.json
+citations_doi.csv
 
 flycheck__*
 
